@@ -16,12 +16,12 @@
 # The meteor.com Hot Dump 2-step 
 # Dump a mongo db from a live meteor app to a local dump dir. 
 #
-# Translates splits up the output of:
+# Splits up the output of:
 #    meteor mongo $METEOR_DOMAIN --url 
 # and pushes it into 
 #    mongodump -u $MONGO_USER -h $MONGO_DOMAIN -d $MONGO_DB -p "${MONGO_PASSWORD}"
 # 
-# Doing so by hand is tedious as password in the url is only valid for 60 seconds.
+# Doing so by hand is tedious as the password in the url is only valid for 60 seconds.
 #
 # Requires 
 # - meteor  (tested on 0.5.9)
