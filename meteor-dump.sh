@@ -55,7 +55,13 @@ TMP_FILE="/tmp/meteor-dump.tmp"
 # Get the mongo url for your meteor app
 meteor mongo $METEOR_DOMAIN --url | tee "${TMP_FILE}"
 
-MONGO_URL=$(sed '/Password:/d' /tmp/meteor-dump.tmp)
+MONGO_URL=$(sed '/Password:/d' "${TMP_FILE}")
+
+# clean up the temp file
+if [[ -f "${TMP_FILE}" ]]
+then
+	rm "${TMP_FILE}"
+fi
 
 if [[ $MONGO_URL =~ $MONGO_URL_REGEX ]] 
 then
@@ -69,10 +75,4 @@ then
 else
 	echo "Sorry, no dump for you. Couldn't extract your details from the url: ${MONGO_URL}"
 	exit 1
-fi
-
-# clean up the temp file
-if [[ -f "${TMP_FILE}" ]]
-then
-	rm "${TMP_FILE}"
 fi
