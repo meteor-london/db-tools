@@ -40,7 +40,7 @@ METEOR_DOMAIN="$1"
 
 if [[ "$METEOR_DOMAIN" == "" ]]
 then
-	echo "You need to supply your mongo url"
+	echo "You need to supply your meteor app name"
 	echo "e.g. ./meteor-dump.sh app"
 	exit 1
 fi
