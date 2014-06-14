@@ -6,31 +6,36 @@
 # |__|_|  / \___  > |__|   \___  > \____/  |__|
 #      \/      \/             \/
 #
-#     .___
-#   __| _/ __ __   _____  ______
-#  / __ | |  |  \ /     \ \____ \
-# / /_/ | |  |  /|  Y Y  \|  |_> >
-# \____ | |____/ |__|_|  /|   __/
-#      \/              \/ |__|
+#                          __
+# _______   ____    _______/  |_   ____  _______   ____
+# \_  __ \_/ __ \  /  ___/\   __\ /  _ \ \_  __ \_/ __ \
+#  |  | \/\  ___/  \___ \  |  |  (  <_> ) |  | \/\  ___/
+#  |__|    \___  >/____  > |__|   \____/  |__|    \___  >
+#              \/      \/                             \/
 #
 # The meteor.com Hot Dump 2-step
-# Dump a mongo db from a live meteor app to a local dump dir.
+# Restore a mongo db from a local dump dir to an app hosted on meteor.com
 #
 # Splits up the output of:
 #    meteor mongo $METEOR_DOMAIN --url
 # and pushes it into
-#    mongodump -u $MONGO_USER -h $MONGO_DOMAIN -d $MONGO_DB -p "${MONGO_PASSWORD}"
+#    mongorestore -u $MONGO_USER -h $MONGO_DOMAIN -d $MONGO_DB -p "${MONGO_PASSWORD}"
 #
 # Doing so by hand is tedious as the password in the url is only valid for 60 seconds.
 #
+# As per the monogorestore docs:
+#
+# - mongorestore recreates indexes recorded by mongodump.
+# - all operations are inserts, not updates.
+# - mongorestore does not wait for a response from a mongod to ensure that the MongoDB process has received or recorded the operation.
+# - The mongod will record any errors to its log that occur during a restore operation, but mongorestore will not receive errors.
+#
 # Requires
-# - meteor  (tested on 0.5.9)
+# - meteor  (tested on 0.8.1)
 # - mongodb (tested in 2.4.0)
 #
 # Usage
-#    ./meteor-dump.sh goto
-#
-# If all goes well it'll create a dump folder in the current working directory.
+#    ./meteor-restore.sh goto
 #
 # By @olizilla
 # On 2013-03-20. Using this script after it's sell by date may void your warranty.
@@ -41,8 +46,8 @@ DUMP_DIR="${2:-dump}"
 
 if [[ "$METEOR_DOMAIN" == "" ]]
 then
-	echo "You need to supply your meteor app name and optionally an output path for the dump dir"
-	echo "e.g. ./meteor-dump.sh app <PATH>"
+	echo "You need to supply your meteor app name and the path to the dump dir"
+	echo "e.g. ./meteor-restore.sh app <path>"
 	exit 1
 fi
 
@@ -51,7 +56,7 @@ fi
 MONGO_URL_REGEX="mongodb:\/\/(.*):(.*)@(.*)\/(.*)"
 
 # stupid tmp file as meteor may want to prompt for a password
-TMP_FILE="/tmp/meteor-dump.tmp"
+TMP_FILE="/tmp/meteor-restore.tmp"
 
 # Get the mongo url for your meteor app
 meteor mongo $METEOR_DOMAIN --url | tee "${TMP_FILE}"
@@ -71,9 +76,9 @@ then
 	MONGO_DOMAIN="${BASH_REMATCH[3]}"
 	MONGO_DB="${BASH_REMATCH[4]}"
 
-	#e.g mongodump -u client -h skybreak.member0.mongolayer.com:27017 -d goto_meteor_com -p "guid-style-password"
-	mongodump -u $MONGO_USER -h $MONGO_DOMAIN -d $MONGO_DB -p "${MONGO_PASSWORD}" -o $DUMP_DIR
+	#e.g mongorestore -u client -h skybreak.member0.mongolayer.com:27017 -d goto_meteor_com -p "guid-style-password" ~/dump
+	mongorestore -u $MONGO_USER -h $MONGO_DOMAIN -d $MONGO_DB -p "${MONGO_PASSWORD}" $DUMP_DIR
 else
-	echo "Sorry, no dump for you. Couldn't extract your details from the url: ${MONGO_URL}"
+	echo "Sorry, no restore for you. Couldn't extract your details from the url: ${MONGO_URL}"
 	exit 1
 fi
